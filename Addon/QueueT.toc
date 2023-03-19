@@ -1,0 +1,9 @@
+## Interface: 100005
+## Title: QueueT
+## Notes: Add Text notifications for when your queues pop!
+## Author: Tyler Jones
+## Version: 0.0.1
+## SavedVariables: PROFILE
+
+Profile.lua
+Main.lua
