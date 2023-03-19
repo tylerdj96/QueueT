@@ -5,13 +5,15 @@ from tkinter import Tk, ttk
 
 def constructSettingsUI(
         pollingInterval,
+        confidence,
         screenshotPath,
         wowRootDir,
         accountName,
         saveSettings):
     root = tk.Tk()
     
-    currentPollingInterval = tk.IntVar()
+    currentPollingInterval = tk.IntVar(value=pollingInterval)
+    currentPollingInterval = tk.DoubleVar()
 
     def selectAddonsFolder():
         addonsDirectory = fileDialog.askdirectory(mustexist=True)
@@ -40,7 +42,11 @@ def constructSettingsUI(
     quitAndSaveFrame.grid()
 
     tk.Label(optionsFrame, text="Polling Interval:").grid(column=0, row=0)
-    tk.Label(optionsFrame, text=pollingInterval).grid(column=1, row=0)
+    # tk.Label(optionsFrame, text=pollingInterval).grid(column=1, row=0)
+    tk.Entry(optionsFrame, textvariable=currentPollingInterval).grid(column=1, row=0)
+    
+    tk.Label(optionsFrame, text="Confidence:").grid(column=0, row=0)
+    tk.Label(optionsFrame, text=confidence).grid(column=1, row=0)
     tk.Entry(optionsFrame, textvariable=currentPollingInterval).grid(column=2, row=0)
 
     tk.Label(optionsFrame, text="Queue Pop Visual Indicator:").grid(

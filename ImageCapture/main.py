@@ -20,6 +20,7 @@ ADDON_FULLPATH = os.path.join(FULLPATH, ADDON_FILENAME)
 JSON_FULLPATH = os.path.join(FULLPATH, JSON_FILENAME)
 
 POLLING_INTERVAL = 5
+CONFIDENCE = 0.8
 SCREENSHOT_PATH = 'D:\Fun\QueueT\ImageCapture\images\okayPopTest.png'
 WOW_ROOT_DIR = 'D:\World of Warcraft'
 
@@ -32,6 +33,7 @@ def readFromFileSystem():
     global settings
     defaults = {
         "pollingInterval": POLLING_INTERVAL,
+        "confidence": CONFIDENCE,
         "screenshotPath": SCREENSHOT_PATH,
         "wowRootDir": WOW_ROOT_DIR,
         "accountName": ACCOUNT_NAME
@@ -41,6 +43,7 @@ def readFromFileSystem():
         data = json.load(jsonFile)
         settings = {
             "pollingInterval": data['pollingInterval'],
+            "confidence": data['confidence'],
             "screenshotPath": data['screenshotPath'],
             "wowRootDir": data['wowRootDir'],
             "accountName": data['accountName']
@@ -58,12 +61,14 @@ def readFromFileSystem():
 
 def writeToFileSystem(
     pollingInterval,
+    confidence,
     screenshotPath,
     wowRootDir,
     accountName):
     global settings
     newSettings = {
         "pollingInterval": pollingInterval,
+        "confidence": confidence,
         "screenshotPath": screenshotPath,
         "wowRootDir": wowRootDir,
         "accountName": accountName
@@ -74,10 +79,12 @@ def writeToFileSystem(
     newJsonFile.close()
 
 
-def scanScreen():
+def scanScreen(settings):
     try:
         queuePop = pyautogui.locateOnScreen(
-            SCREENSHOT_PATH, grayscale=False, confidence=0.8)
+            settings['screenshotPath'], 
+            grayscale=False, 
+            confidence=settings['confidence'])
         print(queuePop)
         # pyautogui.screenshot('ImageCapture/assets/my_screenshot.png')
     except pyautogui.ImageNotFoundException:
@@ -88,6 +95,7 @@ def main():
     print(settings)
     constructSettingsUI(
         settings['pollingInterval'],
+        settings['confidence'],
         settings['screenshotPath'],
         settings['wowRootDir'],
         settings['accountName'],
