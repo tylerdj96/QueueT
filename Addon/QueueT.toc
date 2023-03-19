@@ -3,7 +3,7 @@
 ## Notes: Add Text notifications for when your queues pop!
 ## Author: Tyler Jones
 ## Version: 0.0.1
-## SavedVariables: PROFILE
+## SavedVariables: PHONENUMBER
 
 Profile.lua
 Main.lua

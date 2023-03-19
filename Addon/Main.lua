@@ -1,6 +1,6 @@
 local _G = _G
 local _, QueueTdb = ...
-local profile
+local phoneNumber
 
 local QueueT = CreateFrame("Frame", "ATT", UIParent)
 local panels = {}
@@ -28,7 +28,7 @@ end
 local function QueueT_OnLoad(self)
     -- self:RegisterEvent("PLAYER_ENTERING_WORLD")
     -- https://wowpedia.fandom.com/wiki/Saving_variables_between_game_sessions
-    profile = PROFILE or QueueTdb.Profile
+    phoneNumber = PHONENUMBER or QueueTdb.PhoneNumber
     self:SetScript("OnEvent", function(self, event, ...)
         if self[event] then
             self[event](self, ...)
@@ -57,19 +57,19 @@ function QueueT:InputPhoneNumber()
     local btns = {}
     self.btns = btns
     local phoneNumberEditBox = CreateEditBox("Phone Number", panel, 30, 100)
-    print(profile["phoneNumber"])
-    phoneNumberEditBox:SetText(profile["phoneNumber"])
+    print(phoneNumber)
+    phoneNumberEditBox:SetText(phoneNumber)
     local saveButton = panel:MakeButton('name', 'Save', 'newsize', 2, 'description', "Save Phone Number",
         'func',
         function()
-            local phoneNumber = phoneNumberEditBox:GetText()
+            local phoneNumberValue = phoneNumberEditBox:GetText()
             -- local isPhoneNumberGood = match(phoneNumber, "^[0-9]{10}$");
             -- print(isPhoneNumberGood)
-            if phoneNumber then
-                profile["phoneNumber"] = phoneNumber
+            if phoneNumberValue then
+                phoneNumber = phoneNumberValue
                 -- persist to WTF\Account\ACCOUNTNAME\SavedVariables\AddOnName.lua
-                PROFILE = profile
-                print("Updated Phone # to: |cffFF4500" .. phoneNumber)
+                PHONENUMBER = phoneNumber
+                print("Updated Phone # to: |cffFF4500" .. phoneNumberValue)
             end
         end
     )

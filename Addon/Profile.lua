@@ -1,5 +1,3 @@
 local addon, QueueTdb = ...
 
-QueueTdb.Profile = {
-    ["phoneNumber"] = ""
-}
+QueueTdb.PhoneNumber = ""
