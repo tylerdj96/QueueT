@@ -1,6 +1,10 @@
 # Compiled Lua sources
 luac.out
 
+*/dist/*
+*/build/*
+*/__pycache__/*
+
 # luarocks build files
 *.src.rock
 *.zip

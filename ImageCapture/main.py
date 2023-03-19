@@ -6,6 +6,8 @@ import json
 sys.path.insert(0, 'ImageCapture/modules')
 from constructSettingsUI import constructSettingsUI
 
+CURRENT_DIR = os.path.dirname(__file__)
+
 ROOT_DIR = 'D:\World of Warcraft'
 WTF_DIR = '_retail_\WTF'
 ACCOUNT_DIR = 'Account'
@@ -27,6 +29,14 @@ WOW_ROOT_DIR = 'D:\World of Warcraft'
 print(FULLPATH)
 
 settings = {}
+
+try:
+    from ctypes import windll  # Only exists on Windows.
+
+    myappid = "tylerdj96.queueT.imagecapture.1.0"
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
 
 def readFromFileSystem():
@@ -103,7 +113,7 @@ def main():
     )
     while True:
         print("Beginning scan...")
-        scanScreen()
+        scanScreen(settings)
         print(f"waiting for {settings['pollingInterval']} seconds...")
         time.sleep(settings['pollingInterval'])
 
