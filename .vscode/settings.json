@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/a63e5844-4c8c-49cd-9500-a410ae85defa/resourceGroups/QueueT/providers/Microsoft.Web/sites/QueueT",
+    "appService.deploySubpath": "QueuePopNotify\\bin\\Publish"
+}

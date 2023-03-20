@@ -1,125 +1,99 @@
-import pyautogui
 import time
-import sys
 import os.path
-import json
-sys.path.insert(0, 'ImageCapture/modules')
+import qt_fs
+from sys import exit
+from pyautogui import locateOnScreen, ImageNotFoundException
+from infi.systray import SysTrayIcon
+from threading import Thread, Event
+
 from constructSettingsUI import constructSettingsUI
+from notify import notifyQueuePop
 
 CURRENT_DIR = os.path.dirname(__file__)
 
-ROOT_DIR = 'D:\World of Warcraft'
-WTF_DIR = '_retail_\WTF'
-ACCOUNT_DIR = 'Account'
-ACCOUNT_NAME = 'TEXMAX456'
-SAVED_VARIABLES_DIR = 'SavedVariables'
-ADDON_FILENAME = 'QueueT.lua'
-JSON_FILENAME = 'QueueT.json'
-
-FULLPATH = os.path.join(ROOT_DIR, WTF_DIR, ACCOUNT_DIR,
-                        ACCOUNT_NAME, SAVED_VARIABLES_DIR)
-ADDON_FULLPATH = os.path.join(FULLPATH, ADDON_FILENAME)
-JSON_FULLPATH = os.path.join(FULLPATH, JSON_FILENAME)
-
-POLLING_INTERVAL = 5
-CONFIDENCE = 0.8
-SCREENSHOT_PATH = 'D:\Fun\QueueT\ImageCapture\images\okayPopTest.png'
-WOW_ROOT_DIR = 'D:\World of Warcraft'
-
-print(FULLPATH)
-
-settings = {}
-
-try:
-    from ctypes import windll  # Only exists on Windows.
-
-    myappid = "tylerdj96.queueT.imagecapture.1.0"
-    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-except ImportError:
-    pass
-
-
-def readFromFileSystem():
-    global settings
-    defaults = {
-        "pollingInterval": POLLING_INTERVAL,
-        "confidence": CONFIDENCE,
-        "screenshotPath": SCREENSHOT_PATH,
-        "wowRootDir": WOW_ROOT_DIR,
-        "accountName": ACCOUNT_NAME
-    }
-    try:
-        jsonFile = open(JSON_FULLPATH)
-        data = json.load(jsonFile)
-        settings = {
-            "pollingInterval": data['pollingInterval'],
-            "confidence": data['confidence'],
-            "screenshotPath": data['screenshotPath'],
-            "wowRootDir": data['wowRootDir'],
-            "accountName": data['accountName']
-        }
-        jsonFile.close()
-    except OSError or json.JSONDecodeError:
-        print("Could not read/open file. Creating with defaults")
-        newJsonFile = open(JSON_FULLPATH, 'w')
-        json.dump(defaults, newJsonFile)
-        settings = defaults
-        newJsonFile.close()
-
-# this is called after init so we know ADDON.json exists
-
-
-def writeToFileSystem(
-    pollingInterval,
-    confidence,
-    screenshotPath,
-    wowRootDir,
-    accountName):
-    global settings
-    newSettings = {
-        "pollingInterval": pollingInterval,
-        "confidence": confidence,
-        "screenshotPath": screenshotPath,
-        "wowRootDir": wowRootDir,
-        "accountName": accountName
-    }
-    newJsonFile = open(JSON_FULLPATH, 'w')
-    json.dump(newSettings, newJsonFile)
-    settings = newSettings
-    newJsonFile.close()
-
+scanning = False
+stopEvent = Event()
+currentlyScanning = Event()
+daemon = None
 
 def scanScreen(settings):
     try:
-        queuePop = pyautogui.locateOnScreen(
+        print("...searching...")
+        print(settings)
+        queuePop = locateOnScreen(
             settings['screenshotPath'], 
             grayscale=False, 
             confidence=settings['confidence'])
         print(queuePop)
-        # pyautogui.screenshot('ImageCapture/assets/my_screenshot.png')
-    except pyautogui.ImageNotFoundException:
+        if (queuePop != None): 
+            qt_fs.writeLogToFileSystem("IMAGE FOUND!")
+            phoneNumber = qt_fs.readPhoneNumberFromAddon()
+            if (phoneNumber != None):
+                notifyQueuePop(phoneNumber)
+                time.sleep(60)
+                qt_fs.writeLogToFileSystem('Sleeping for 60 seconds...')
+    except ImageNotFoundException or OSError:
         print("Image not found...")
 
-def main():
-    readFromFileSystem()
-    print(settings)
+def scanScreenForQueuePop(settings):
+    while not stopEvent.is_set():
+        print("Beginning scan...")
+        qt_fs.writeLogToFileSystem("Beginning scan...")
+        scanScreen(settings)
+        print(f"waiting for {settings['pollingInterval']} seconds...")
+        qt_fs.writeLogToFileSystem(f"waiting for {settings['pollingInterval']} seconds...")
+        time.sleep(settings['pollingInterval'])
+        
+def startNewBackgroundThread():
+    global daemon
+    settings = qt_fs.readSettingsFromFileSystem()
+    daemon = Thread(target=scanScreenForQueuePop, args=(settings,), daemon=True, name='Background')
+    stopEvent.clear()
+    currentlyScanning.set()
+    daemon.start()
+    
+def stopOldBackgroundThread():
+    print(f"Stopping scan...")
+    if (not stopEvent.is_set()):
+        stopEvent.set()
+    if (currentlyScanning.is_set()):
+        currentlyScanning.clear()
+    if (daemon is not None):
+        daemon.join()
+
+def start_SYSTRAY(_):
+    if (currentlyScanning.is_set()): 
+        qt_fs.writeLogToFileSystem("Scanning already in progress...")
+    else:
+        qt_fs.clearFileSystemLogs()
+        startNewBackgroundThread()
+
+def changeSettings_SYSTRAY(_):
+    settings = qt_fs.readSettingsFromFileSystem()
     constructSettingsUI(
         settings['pollingInterval'],
         settings['confidence'],
         settings['screenshotPath'],
         settings['wowRootDir'],
         settings['accountName'],
-        writeToFileSystem
     )
-    while True:
-        print("Beginning scan...")
-        scanScreen(settings)
-        print(f"waiting for {settings['pollingInterval']} seconds...")
-        time.sleep(settings['pollingInterval'])
+    stopOldBackgroundThread()
+    startNewBackgroundThread()
 
+    
+def quit_SYSTRAY(_):
+    qt_fs.writeLogToFileSystem("You killed me! >:(")
+    stopOldBackgroundThread()
+    exit("Error message")
+    
+hover_text = "QueueT"
 
-main()
+menu_options = (('Start', None, start_SYSTRAY),
+                ('Change Settings', None, changeSettings_SYSTRAY)
+               )
 
+sysTrayIcon = SysTrayIcon(os.path.join(CURRENT_DIR, "./images/logo/QueueT.ico"), hover_text, menu_options, on_quit=quit_SYSTRAY, default_menu_index=1)
+sysTrayIcon.start()
 
 # use me for help
 #btn = ttk.Button(frm, ...)

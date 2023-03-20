@@ -4,6 +4,9 @@ luac.out
 */dist/*
 */build/*
 */__pycache__/*
+*/bin
+*/obj
+
 
 # luarocks build files
 *.src.rock

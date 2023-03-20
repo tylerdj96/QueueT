@@ -34,37 +34,28 @@ local function QueueT_OnLoad(self)
             self[event](self, ...)
         end
     end);
-    print("1")
     self:CreateOptions()
-    print("Created Options")
 end
 
 function QueueT:CreateOptions()
-    print("2")
     local panel = self.AddOptionsPanel("QueueT", function()
     end)
     self.panel = panel
     AddSlashCommand("QueueT", "/queueT")
-    print("6")
-    local title, subText = panel:MakeTitleTextAndSubText("QueueT - Receive Texts when your Queue POPs!")
+    local title, subText = panel:MakeTitleTextAndSubText("QueueT", "Receive text alerts when your queues pop")
     self:InputPhoneNumber()
-    print("5")
 end
 
 function QueueT:InputPhoneNumber()
-    print("3")
     local panel = self.panel
     local btns = {}
     self.btns = btns
     local phoneNumberEditBox = CreateEditBox("Phone Number", panel, 30, 100)
-    print(phoneNumber)
     phoneNumberEditBox:SetText(phoneNumber)
     local saveButton = panel:MakeButton('name', 'Save', 'newsize', 2, 'description', "Save Phone Number",
         'func',
         function()
             local phoneNumberValue = phoneNumberEditBox:GetText()
-            -- local isPhoneNumberGood = match(phoneNumber, "^[0-9]{10}$");
-            -- print(isPhoneNumberGood)
             if phoneNumberValue then
                 phoneNumber = phoneNumberValue
                 -- persist to WTF\Account\ACCOUNTNAME\SavedVariables\AddOnName.lua
@@ -75,7 +66,6 @@ function QueueT:InputPhoneNumber()
     )
     phoneNumberEditBox:SetPoint("TOPLEFT", panel, "TOPLEFT", 5, -65)
     saveButton:SetPoint("TOPLEFT", phoneNumberEditBox, "BOTTOMLEFT", -5, -5)
-    print("4")
 end
 
 function AddSlashCommand(name, ...)
